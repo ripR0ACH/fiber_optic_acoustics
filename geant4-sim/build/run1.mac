@@ -1,0 +1,37 @@
+# Macro file for lightGuide
+#
+# To be run preferably in batch, without graphics:
+
+# Initialize kernel
+/run/initialize
+
+
+/control/verbose 0
+/run/verbose 0
+/run/printProgress 0
+/tracking/verbose 0
+/run/particle/verbose 0
+/hits/verbose 0 
+
+# If you'd like to see it in the visualizer, comment these in
+# /control/verbose 1
+# /run/verbose 1
+# /run/printProgress 0
+# /tracking/verbose 1
+# /run/particle/verbose 1
+# /hits/verbose 1
+
+
+##############################################################
+##############################################################
+#Uncomment to generate events from ASCII file, set the file path here.
+#make sure /run/beamOn is commented out below
+#/Input/FileName Out_target1.txt
+
+
+#Uncomment to use gps style of setting the beam profile
+/control/execute beam.mac
+# number of events
+/run/beamOn 10000
+##############################################################
+##############################################################

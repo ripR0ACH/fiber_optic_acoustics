@@ -1,0 +1,126 @@
+
+/lightGuide/worldVolume 0.5 0.5 0.5 m #0.25 0.25 0.25 m
+/lightGuide/envelope 89.75 113. 165. mm 
+
+/lightGuide/model/PMTDiameter 20 mm
+/lightGuide/model/nSegmentsX 1
+/lightGuide/model/nSegmentsZ 1
+
+
+
+#----- Set the light guide to be used and position it -----
+#If no model is selected, the program will default to a
+#simplified trapezoidal light guide
+
+/lightGuide/model/CADmodel ../models/EMprototypeSingle.stl
+#-260 is default "center" height of reflective surface
+#-261 is down, -259 is up
+/lightGuide/model/translate 175.25 -260.0005 20 mm #surface is 6 up from origin
+/lightGuide/model/translatePMT 0 -220 -37 mm
+# /lightGuide/model/translatePMT 0 -232 -37 mm #more glancing angle 
+/lightGuide/model/rotate 90 0 0 deg
+
+# /lightGuide/model/translatePMT 0 -848.2 -286 mm
+# /lightGuide/model/rotatePMT 123.7 0 0 deg
+
+# /lightGuide/model/CADmodel ../models/Run3-HAD.stl
+# /lightGuide/model/translate  200 -95 0 mm
+# /lightGuide/model/translatePMT  0 -92 0 mm
+
+# /lightGuide/model/CADmodel ../models/HAD_NewGuide.stl
+# /lightGuide/model/translate 285 -235 -145 mm
+# /lightGuide/model/translatePMT  0 -175 0 mm
+
+# /lightGuide/model/CADmodel ../models/EM_50x50x56_from_NPL_sim_validation_corrected.stl
+# # /lightGuide/model/translate 175 -205 -27.5 mm
+# # /lightGuide/model/translatePMT  0 -150 0 mm
+# # /lightGuide/model/rotate 0 0 0 deg
+# # /lightGuide/model/translate 27.5 -205 175 mm
+# # /lightGuide/model/translatePMT  0 -150 0 mm
+# # /lightGuide/model/rotate 0 90 0 deg
+# /lightGuide/model/translate -175 -205 27.5 mm
+# /lightGuide/model/translatePMT  0 -150 0 mm
+# /lightGuide/model/rotate 0 180 0 deg
+
+# /lightGuide/model/CADmodel ../models/EM_50x50x70_from_KS_sim_validation_CORRECTED.stl
+# /lightGuide/model/translate 178 -120 -36.5 mm
+# /lightGuide/model/translatePMT  0 -50 0 mm
+
+# /lightGuide/model/CADmodel ../models/EM_50x50x70_from_KS_sim_validation.stl
+# /lightGuide/model/translate 175 150 -25 mm
+# /lightGuide/model/translatePMT  0 220 0 mm
+
+# /lightGuide/model/CADmodel ../models/EM-trap-50x50x70.stl
+# /lightGuide/model/translate 175 -125 -25 mm
+# /lightGuide/model/translatePMT  0 -55 0 mm
+
+# /lightGuide/model/CADmodel ../models/Run4-HAD-proto.stl #original prototype
+# /lightGuide/model/translate 240 -125 138.5 mm 
+# /lightGuide/model/translatePMT  0 -80 0 mm
+
+# /lightGuide/model/CADmodel ../models/Run4-HADFullTrap.stl #original prototype
+# /lightGuide/model/translate 240 -248 138.5 mm
+# /lightGuide/model/translatePMT  0 -196 0 mm
+
+# /lightGuide/model/CADmodel ../models/EMprototypeSingle56mmtall.stl
+# /lightGuide/model/translate 175 -125 -7.5 mm
+# /lightGuide/model/translatePMT 0 -68 0 mm
+
+# /lightGuide/model/CADmodel ../models/EM-trap-seg.stl #56mm tall
+# /lightGuide/model/translate 175 -125 -57.5 mm
+# /lightGuide/model/translatePMT 0 -68 0 mm
+
+# /lightGuide/model/CADmodel ../models/EM-trap-17mm-exit.stl #49x49x56
+# /lightGuide/model/translate 225 -125 -25 mm
+# /lightGuide/model/translatePMT 0 -53 0 mm
+
+# /lightGuide/model/CADmodel ../models/EM-trap-17mm-exit-69TALL.stl #49x49x56
+# /lightGuide/model/translate 225 -125 25 mm
+# /lightGuide/model/translatePMT 0 -54 0 mm
+
+# /lightGuide/model/CADmodel ../models/EM-trap-25mm-exit.stl #49x49x56
+# /lightGuide/model/translate 224.5 30 30 mm
+# /lightGuide/model/translatePMT 0 78 0 mm
+
+# /lightGuide/model/CADmodel ../models/EM-trap-25mm-exit-69TALL.stl #49x49x56
+# /lightGuide/model/translate 225 -125 -25 mm
+# /lightGuide/model/translatePMT 0 -54 0 mm
+
+# /lightGuide/model/CADmodel ../models/EM-trap-27mm-exit.stl
+# /lightGuide/model/translate 175 -125 -25 mm
+# /lightGuide/model/translatePMT 0 -68 0 mm
+
+# /lightGuide/model/CADmodel ../models/EM-trap-10mm-exit.stl
+# /lightGuide/model/translate 175 -125 -25 mm
+# /lightGuide/model/translatePMT 0 -68 0 mm
+
+# /lightGuide/model/CADmodel ../models/EM-trap-10mm-exit.stl
+# /lightGuide/model/translate 175 -125 -25 mm
+# /lightGuide/model/translatePMT 0 -68 0 mm
+
+# /lightGuide/model/CADmodel ../models/run2.stl
+# /lightGuide/model/translate 200 -125 0 mm
+# /lightGuide/model/translatePMT 0 -74.5 0 mm
+
+# /lightGuide/model/CADmodel ../models/EMprototype.stl
+# /lightGuide/model/translate 0 0 0 mm
+# /lightGuide/model/translatePMT 0 -74.5 0 mm
+
+# /lightGuide/model/CADmodel ../models/2020WC.stl
+# /lightGuide/model/rotate 0 0 90
+# /lightGuide/model/translate 0 -319 0 mm
+# /lightGuide/model/translatePMT 0 -119 0 mm
+
+#----- Set surface properties of the light guide -----
+#/lightGuide/surface/Model unified
+#/lightGuide/surface/Type dielectric_metal
+#/lightGuide/surface/Finish ground
+#/lightGuide/surface/SigmaAlpha .1
+#/lightGuide/surface/Property SPECULARLOBECONSTANT 0.000002 .4 0.000008 .4
+#/lightGuide/surface/Property SPECULARSPIKECONSTANT 0.000002 .1 0.000008 .1
+#/lightGuide/surface/Property BACKSCATTERCONSTANT 0.000002 .05 0.000008 .05
+#/lightGuide/surface/Property REFLECTIVITY 0.000002 .89 0.000008 .89
+
+
+#----- Set the refractive index of the gas the light guide is inside of -----
+#/lightGuide/gasProperty RINDEX 0.000002 1.0 0.000008 1.0

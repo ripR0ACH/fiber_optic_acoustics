@@ -1,0 +1,25 @@
+Sample installation guide: Ubuntu Installation
+
+Begin by installing prerequisite software
+
+ROOT
+
+
+GEANT4-----------
+Installation walkthrough can be found here: 
+https://geant4-userdoc.web.cern.ch/UsersGuides/InstallationGuide/html/installguide.html#buildandinstall
+
+Example:
+blah blah
+
+is this needed?
+
+cmake -DCMAKE_INSTALL_PREFIX=../geant${geant_version}-install -DGEANT4_USE_QT=ON -DGEANT4_USE_OPENGL_X11=ON -DGEANT4_USE_GDML=ON -DGEANT4_INSTALL_DATA=ON ../geant${geant_version}
+
+also how necesssary is it to echo to bash?
+
+source ${geant_directory}/geant4/geasource ${geant_directory}/geant4/geant${geant_version}-install/bin/geant4.shnt${geant_version}-install/bin/geant4.sh
+echo "source ${geant_directory}/geant4/geant${geant_version}-install/bin/geant4.sh" >> ~/.bashrc
+​
+
+

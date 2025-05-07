@@ -1,0 +1,8 @@
+/home/skoosh/sw/OpticsProject/fiber_optic_acoustics/geant4-sim/install/bin/lightGuide
+/home/skoosh/sw/OpticsProject/fiber_optic_acoustics/geant4-sim/install/bin/plotHisto
+/home/skoosh/sw/OpticsProject/fiber_optic_acoustics/geant4-sim/install/bin/run1.mac
+/home/skoosh/sw/OpticsProject/fiber_optic_acoustics/geant4-sim/install/bin/geometry.mac
+/home/skoosh/sw/OpticsProject/fiber_optic_acoustics/geant4-sim/install/bin/beam.mac
+/home/skoosh/sw/OpticsProject/fiber_optic_acoustics/geant4-sim/install/bin/vis.mac
+/home/skoosh/sw/OpticsProject/fiber_optic_acoustics/geant4-sim/install/bin/hist.mac
+/home/skoosh/sw/OpticsProject/fiber_optic_acoustics/geant4-sim/install/models/EMprototypeSingle.stl

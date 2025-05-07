@@ -1,0 +1,8 @@
+/home/skoosh/sw/OpticsProject/fiber_optic_acoustics/geant4-sim/build/CMakeFiles/lightGuide.dir
+/home/skoosh/sw/OpticsProject/fiber_optic_acoustics/geant4-sim/build/CMakeFiles/plotHisto.dir
+/home/skoosh/sw/OpticsProject/fiber_optic_acoustics/geant4-sim/build/CMakeFiles/edit_cache.dir
+/home/skoosh/sw/OpticsProject/fiber_optic_acoustics/geant4-sim/build/CMakeFiles/rebuild_cache.dir
+/home/skoosh/sw/OpticsProject/fiber_optic_acoustics/geant4-sim/build/CMakeFiles/list_install_components.dir
+/home/skoosh/sw/OpticsProject/fiber_optic_acoustics/geant4-sim/build/CMakeFiles/install.dir
+/home/skoosh/sw/OpticsProject/fiber_optic_acoustics/geant4-sim/build/CMakeFiles/install/local.dir
+/home/skoosh/sw/OpticsProject/fiber_optic_acoustics/geant4-sim/build/CMakeFiles/install/strip.dir
