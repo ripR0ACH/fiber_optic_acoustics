@@ -27,19 +27,20 @@ class Fiber:
         # of the fiber and on the 0 y position.
         # For the other half, the first fiber is at the opposite side of the x-axis,
         # i.e. at x = r and y = 2r. 
-        if self.theta == 0:
-            center = [self.r, 0] # the first fiber.
-        elif self.theta < np.pi:
-            center = [self.r - (self.fiber_ring * np.cos(self.theta)), (self.fiber_ring * np.sin(self.theta))] 
-            # the rest of the fibers in the top half 
-            # are drawn in arcs defined by concentric rings, fiber_ring.
-            # therefore, depending on the ring and the angle theta, the fiber is set.
-        elif self.theta == np.pi:
-            center = [self.r, 2 * self.r] # the first fiber on the other side of x-axis.
-        else:
-            center = [self.r - (self.fiber_ring * np.cos(self.theta)), 2 * self.r - (self.fiber_ring * np.cos(self.theta))]
-            # same as above, the fibers are drawn in concentric rings defined by
-            # by theta and the fiber_ring.
+        # if self.theta == 0:
+        #     self.center = [self.fiber_ring, 0] # the first fiber.
+        # elif self.theta < np.pi:
+        #     self.center = [self.fiber_ring * np.cos(self.theta), self.fiber_ring * np.sin(self.theta)] 
+        #     # the rest of the fibers in the top half 
+        #     # are drawn in arcs defined by concentric rings, fiber_ring.
+        #     # therefore, depending on the ring and the angle theta, the fiber is set.
+        # elif self.theta == np.pi:
+        #     self.center = [-self.fiber_ring, 0] # the first fiber on the other side of x-axis.
+        # else:
+        #     self.center = [self.fiber_ring * np.cos(self.theta), 2 * self.r - (self.fiber_ring * np.cos(self.theta))]
+        #     # same as above, the fibers are drawn in concentric rings defined by
+        #     # by theta and the fiber_ring.
+        self.center = [(self.r + self.fiber_ring) * np.cos(self.theta), (self.r + self.fiber_ring) * np.sin(self.theta)]
         self.x, self.y = self.draw_fiber()
         return
     
@@ -51,12 +52,12 @@ class Fiber:
         :return: x and y arrays for the circumference of the fiber being plotted.
         
         """
-        r = self.r
-        t = self.theta
-        fr = self.fiber_ring
-        ts = np.linspace(0, 2 * np.pi, 100)
-        if t == 0:
-            return [r * np.cos(ts), r * np.sin(ts) - r]
+        r = self.r # radius of the fiber to be drawn
+        t = self.theta # theta position of the fiber within the bundle
+        fr = self.fiber_ring # radius away from the center of the fiber bundle
+        ts = np.linspace(0, 2 * np.pi, 100) # thetas for drawing the individual fiber
+        if t == 0: # if the fiber is on the right side of the x axis
+            return [r * np.cos(ts), r * np.sin(ts) - r] 
         elif t < np.pi:
             return [r * np.cos(ts) - fr * np.cos(t), r * np.sin(ts) - fr * np.sin(t) - r]
         elif t == np.pi:
@@ -70,9 +71,8 @@ class FiberBundle:
         print(self.fiber_rings)
         self.bundle = self.make_bundle()
         self.count, self.fibers = self.make_bundle()
+        return
 
-        
-        pass
     def make_bundle(self):
         n = 0
         f = np.array([])
@@ -87,13 +87,14 @@ class FiberBundle:
                 f = np.append(f, Fiber(self.fr, t, ring))
         return n, f
     def draw_bundle(self):
-        fig, ax = plt.subplots(1, 1, figsize = (10, 10))
+        _, ax = plt.subplots(1, 1, figsize = (10, 10))
         ax.set_xlim(-self.r - 10, self.r + 10)
         ax.set_ylim(-self.r - 10, self.r + 10)
         for f in self.fibers:
             ax.plot(f.x, f.y)
+            ax.scatter(f.center[0], f.center[1], s=1)
         ax.axline((0, 50), (50, 50))
         ax.axline((50, 50), (50, -50))
         ax.axline((-50, -50), (50, -50))
         ax.axline((-50, -50), (-50, 50))
-        fig.show()
+        plt.show()
