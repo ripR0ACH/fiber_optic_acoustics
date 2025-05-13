@@ -1,6 +1,9 @@
+import time
 from laser import Laser, Ray
 import numpy as np
 import matplotlib.pyplot as plt
+from joblib import Parallel, delayed
+
 class Fiber:
     def __init__(self,  r = 1, t = 0, fr = 1, i = 0, half = 0):
         """
@@ -51,39 +54,53 @@ class Fiber:
             if self.r ** 2 > (r.x - self.center[0]) ** 2 + (r.y - self.center[1]) ** 2:
                 I += r.I
         return I
+    def plot(self, ax, center = False, *args, **kwargs):
+        ax.plot(self.x, self.y, *args, **kwargs)
+        if center:
+            ax.scatter(self.x, self.y, *args, **kwargs)
+        return ax
 
 class FiberBundle:
     def __init__(self, r, fiber_r = 1):
         self.r = r
         self.fr = fiber_r
         self.fiber_rings = np.r_[self.fr, np.linspace(2 * self.fr, (self.r - self.fr) - (self.r - self.fr) % (2 * self.fr), int((self.r - self.fr) / (2 * self.fr)))]
-        self.count, self.fibers = self.make_bundle()
+        # self.fibers = self.make_bundle()
         return
 
     def make_bundle(self):
-        n = 0
+        t1 = time.time()
+        f = np.array([Parallel(n_jobs = -1)(delayed(self.draw_ring)(ring, i) for i in enumerate(self.fiber_rings))])
+        t2 = time.time()
+        print("with parallelization:", t2 - t1)
         f = np.array([])
+        t1 = time.time()
         for i, ring in enumerate(self.fiber_rings):
-            ts = np.linspace(0, np.pi, int(np.pi / ((2 * ring * np.arccos(1 - self.fr ** 2 / (2 * ring ** 2))) / ring)))
-            n += len(ts)
-            for t in ts:
-                f = np.append(f, Fiber(self.fr, t, ring, i))
-            ts = np.linspace(np.pi, 2 * np.pi, int(np.pi / ((2 * ring * np.arccos(1 - self.fr ** 2 / (2 * ring ** 2))) / ring)))
-            for t in ts:
-                f = np.append(f, Fiber(self.fr, t, ring, i, 1))
-            n += len(ts)
-        return n, f
-    def plot(self, centers = False, ax = None, figsize = (10, 10), *args, **kwargs):
+            f = np.append(f, self.draw_ring(ring, i))
+        t2 = time.time()
+        print("without parallelization:", t2 - t1)
+        return f
+    def draw_ring(self, ring, i):
+        f = np.array([])
+        ts = np.linspace(0, np.pi, int(np.pi / ((2 * ring * np.arccos(1 - self.fr ** 2 / (2 * ring ** 2))) / ring)))
+        for t in ts:
+            f = np.append(f, Fiber(self.fr, t, ring, i))
+        ts = np.linspace(np.pi, 2 * np.pi, int(np.pi / ((2 * ring * np.arccos(1 - self.fr ** 2 / (2 * ring ** 2))) / ring)))
+        for t in ts:
+            f = np.append(f, Fiber(self.fr, t, ring, i, 1))
+        return f
+    def plot(self, centers = False, ax = None, figsize = (10, 10), dimensions = (1, 1), *args, **kwargs):
         if ax == None:
-            fig, ax = plt.subplots(1, 1, figsize = figsize)
+            fig, ax = plt.subplots(*dimensions, figsize = figsize)
         else:
             fig = plt.gcf()
-        ax.set_xlim(-self.r - self.r * .1, self.r + self.r * .1)
-        ax.set_ylim(-self.r - self.r * .1, self.r + self.r * .1)
+        # Parallel(n_jobs=-1)(delayed(ax.plot)() for f in self.fibers)
         for f in self.fibers:
             ax.plot(f.x, f.y, *args, **kwargs)
             if centers:
-                ax.scatter(f.center[0], f.center[1], s=5)
+                ax.plot(*f.center)
+        ax.set_xlim(-self.r - self.r * .1, self.r + self.r * .1)
+        ax.set_ylim(-self.r - self.r * .1, self.r + self.r * .1)
         ax.axline((0, self.r), (self.r, self.r))
         ax.axline((self.r, self.r), (self.r, -self.r))
         ax.axline((-self.r, -self.r), (self.r, -self.r))
