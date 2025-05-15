@@ -49,11 +49,11 @@ class Fiber:
         ts = np.linspace(0, 2 * np.pi, 100) # thetas for drawing the individual fiber
         return [self.center[0] + self.r * np.cos(ts), self.center[1] + self.r * np.sin(ts)]
     def intensity(self, l):
-        I = 0
-        for r in l.rays:
-            if self.r ** 2 > (r.x - self.center[0]) ** 2 + (r.y - self.center[1]) ** 2:
-                I += r.I
-        return I
+        return np.sum(Parallel(n_jobs = -1)(delayed(self.check_bounds)(r) for r in l.rays))
+    def check_bounds(self, r):
+        if self.r ** 2 > (r.x - self.center[0]) ** 2 + (r.y - self.center[1]) ** 2:
+            return r.I
+        return 0
     def plot(self, ax, center = False, *args, **kwargs):
         ax.plot(self.x, self.y, *args, **kwargs)
         if center:
@@ -106,7 +106,6 @@ class FiberBundle:
                         if centers:
                             ax.scatter(*f.center, s = scatter_size)
         plt.ion()
-        # Parallel(n_jobs = -1)(delayed(self.add_to_ax)(f, ax, both_halves, half, fibers, centers, figsize, dimensions, *args, **kwargs) for i in range(len(self.fibers)) for f in self.fibers[i])
         ax.set_xlim(-self.r - self.r * .1, self.r + self.r * .1)
         ax.set_ylim(-self.r - self.r * .1, self.r + self.r * .1)
         ax.axline((0, self.r), (self.r, self.r))
@@ -115,10 +114,7 @@ class FiberBundle:
         ax.axline((-self.r, -self.r), (-self.r, self.r))
         return fig, ax
     def sum_intensity(self, l):
-        I = 0
-        for f in self.fibers:
-            I += f.intensity(l)
-        return I
+        return np.sum(Parallel(n_jobs = -1)(delayed(f.intensity)(l) for ring in self.fibers for f in ring))
     def diff_intensity(self, l):
         half_0 = 0
         half_1 = 1
