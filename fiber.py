@@ -1,44 +1,43 @@
 import time
-from laser import Laser, Ray
+from laser import Laser
 import numpy as np
 import matplotlib.pyplot as plt
 from joblib import Parallel, delayed
 
-class Fiber:
-    def __init__(self,  r = 1, t = 0, fr = 1, i = 0, half = 0):
-        """
-        
-        __init__ --- initializes a single fiber instance.
-        
-        :param r: the radius of a single fiber.
-        :param t: the theta position within a concentric ring inside of a fiber
-                  bundle.
-        :param fr: the radius of the current ring, where this fiber will be placed,
-                   inside of the fiber bundle.
-        
-        :return: None.
-        
-        """
-        self.r = r # radius of a single fiber
-        self.theta = t # theta position of the fiber within the bundle
-        self.fiber_ring = fr # distance of the center of the fiber from the center of the fiber bundle
-        self.half = half
-        self.i = i
-        self.center = self.set_pos()
-        self.x, self.y = self.draw_fiber()
+def find_nearest(array, value):
+    array = np.asarray(array)
+    idx = (np.abs(array - value)).argmin()
+    return idx
+
+class FiberBundle:
+    def __init__(self, r, fiber_r = 1):
+        self.r = r
+        self.fr = fiber_r
+        self.fiber_rings = np.r_[self.fr, np.linspace(2 * self.fr, (self.r - self.fr) - (self.r - self.fr) % (2 * self.fr), int((self.r - self.fr) / (2 * self.fr)))]
+        # theta position, ring radius, ring number, half
+        self.fibers = self.make_bundle()
+        self.centers = np.array(Parallel(n_jobs = -1, backend = "threading")(delayed(self.set_fiber_pos)(self.fr, f[0], f[1], f[2], f[3]) for i in range(len(self.fibers)) for f in self.fibers[i]))
+        self.thetas = np.array([f[0] for i in range(len(self.fibers)) for f in self.fibers[i]])
+        self.ring_radius = np.array([f[1] for i in range(len(self.fibers)) for f in self.fibers[i]])
+        self.ring_number = np.array([int(f[2]) for i in range(len(self.fibers)) for f in self.fibers[i]])
+        self.half = np.array([int(f[3]) for i in range(len(self.fibers)) for f in self.fibers[i]])
+        self.count = len(self.centers)
+        self.drawings = np.array(Parallel(n_jobs = -1, backend = "threading")(delayed(self.draw_fiber)(self.centers[i]) for i in range(len(self.centers))))
         return
-    def set_pos(self):
-        if self.half == 0:
-            if self.i == 0:
-                return [self.r * np.cos(self.theta - np.pi / 2), self.r * np.sin(self.theta - np.pi / 2)]
+
+    def set_fiber_pos(self, r, theta, ring, i, half):
+        if half == 0:
+            if i == 0:
+                return np.array([r * np.cos(theta - np.pi / 2), r * np.sin(theta - np.pi / 2)])
             else:
-                return [self.fiber_ring * np.cos(self.theta - np.pi), self.fiber_ring * np.sin(self.theta - np.pi) - self.r]
+                return np.array([ring * np.cos(theta - np.pi), ring * np.sin(theta - np.pi) - r])
         else:
-            if self.i == 0:
-                return [self.r * np.cos(self.theta - np.pi / 2), self.r * np.sin(self.theta - np.pi / 2)]
+            if i == 0:
+                return np.array([r * np.cos(theta - np.pi / 2), r * np.sin(theta - np.pi / 2)])
             else:
-                return [self.fiber_ring * np.cos(self.theta - np.pi), self.fiber_ring * np.sin(self.theta - np.pi) + self.r]
-    def draw_fiber(self): 
+                return np.array([ring * np.cos(theta - np.pi), ring * np.sin(theta - np.pi) + r])
+
+    def draw_fiber(self, center = [0, 0]): 
         """
         
         draw_fiber --- draws the x, y points for the fiber to be that it can be plotted.
@@ -47,84 +46,47 @@ class Fiber:
         
         """
         ts = np.linspace(0, 2 * np.pi, 100) # thetas for drawing the individual fiber
-        return [self.center[0] + self.r * np.cos(ts), self.center[1] + self.r * np.sin(ts)]
-    def intensity(self, l):
-        I = 0
-        for r in l.rays:
-            if self.r ** 2 > (r.x - self.center[0]) ** 2 + (r.y - self.center[1]) ** 2:
-                I += r.I
-        return I
-    def plot(self, ax, center = False, *args, **kwargs):
-        ax.plot(self.x, self.y, *args, **kwargs)
-        if center:
-            ax.scatter(self.x, self.y, *args, **kwargs)
-        return ax
-
-class FiberBundle:
-    def __init__(self, r, fiber_r = 1):
-        self.r = r
-        self.fr = fiber_r
-        self.fiber_rings = np.r_[self.fr, np.linspace(2 * self.fr, (self.r - self.fr) - (self.r - self.fr) % (2 * self.fr), int((self.r - self.fr) / (2 * self.fr)))]
-        self.fibers = np.array(self.make_bundle(), dtype = "object")
-        self.count = np.sum(Parallel(n_jobs = -1)(delayed(len)(self.fibers[i]) for i in range(len(self.fibers))))
-        return
+        return np.array([center[0] + self.fr * np.cos(ts), center[1] + self.fr * np.sin(ts)])
 
     def make_bundle(self):
-        return Parallel(n_jobs = -1)(delayed(self.draw_ring)(ring, i) for i, ring in enumerate(self.fiber_rings))
+        return np.array(Parallel(n_jobs = -1)(delayed(self.draw_ring)(ring, i) for i, ring in enumerate(self.fiber_rings)), dtype = "object").flatten()
 
-    def draw_ring(self, ring, i, f = []):
-        ts = np.linspace(0, np.pi, int(np.pi / ((2 * ring * np.arccos(1 - (self.fr ** 2) / (2 * ring ** 2))) / ring)))
+    def draw_ring(self, ring, i):
+        ts = np.append(np.linspace(0, np.pi, int(np.pi / ((2 * ring * np.arccos(1 - (self.fr ** 2) / (2 * ring ** 2))) / ring))), np.linspace(np.pi, 2 * np.pi, int(np.pi / ((2 * ring * np.arccos(1 - (self.fr ** 2) / (2 * ring ** 2))) / ring))))
         f1 = []
-        Parallel(n_jobs = -1)(delayed(f1.append)(Fiber(self.fr, t, ring, i, 0)) for t in ts)
-        ts = np.linspace(np.pi, 2 * np.pi, int(np.pi / ((2 * ring * np.arccos(1 - (self.fr ** 2) / (2 * ring ** 2))) / ring)))
+        Parallel(n_jobs = -1)(delayed(f1.append)([t, ring, int(i), 0]) for t in ts[:int(len(ts) / 2)])
         f2 = []
-        Parallel(n_jobs = -1)(delayed(f2.append)(Fiber(self.fr, t, ring, i, 1)) for t in ts)
+        Parallel(n_jobs = -1)(delayed(f2.append)([t, ring, int(i), 1]) for t in ts[int(len(ts) / 2):])
         return np.array(f1 + f2)
 
-    def plot(self, both_halves = True, half = 0, fibers = True, centers = False, ax = None, figsize = (10, 10), dimensions = (1, 1), scatter_size = 1, *args, **kwargs):
+    def plot(self, fibers = True, centers = False, ax = None, figsize = (10, 10), dimensions = (1, 1), scatter_size = 1, *args, **kwargs):
         if ax == None:
             fig, ax = plt.subplots(*dimensions, figsize = figsize)
         else:
             fig = plt.gcf()
         plt.ioff()
-        for i in range(len(self.fibers)):
-            for f in self.fibers[i]:
-                if ax == None:
-                    fig, ax = plt.subplots(*dimensions, figsize = figsize)
-                else:
-                    fig = plt.gcf()
-                
-                if both_halves:
-                    if fibers:
-                        ax.plot(f.x, f.y, *args, **kwargs)
-                    if centers:
-                        ax.scatter(*f.center, s = scatter_size)
-                else:
-                    if half == f.half:
-                        if fibers:
-                            ax.plot(f.x, f.y, *args, **kwargs)
-                        if centers:
-                            ax.scatter(*f.center, s = scatter_size)
+        for i in range(len(self.drawings)):
+            if fibers:
+                ax.plot(self.drawings[i][0], self.drawings[i][1], *args, **kwargs)
+            if centers:
+                ax.scatter(*self.centers[i], s = scatter_size)
         plt.ion()
-        # Parallel(n_jobs = -1)(delayed(self.add_to_ax)(f, ax, both_halves, half, fibers, centers, figsize, dimensions, *args, **kwargs) for i in range(len(self.fibers)) for f in self.fibers[i])
-        ax.set_xlim(-self.r - self.r * .1, self.r + self.r * .1)
-        ax.set_ylim(-self.r - self.r * .1, self.r + self.r * .1)
+        # ax.set_xlim(-self.r - self.r * .1, self.r + self.r * .1)
+        # ax.set_ylim(-self.r - self.r * .1, self.r + self.r * .1)
         ax.axline((0, self.r), (self.r, self.r))
         ax.axline((self.r, self.r), (self.r, -self.r))
         ax.axline((-self.r, -self.r), (self.r, -self.r))
         ax.axline((-self.r, -self.r), (-self.r, self.r))
         return fig, ax
-    def sum_intensity(self, l):
-        I = 0
-        for f in self.fibers:
-            I += f.intensity(l)
-        return I
+    
+    def sum_power(self, l):
+        self.total_power = 0
+        for i in range(len(l.x)):
+            x_ind = find_nearest(np.array(self.centers[:, 0] ** 2 + self.centers[:, 1] ** 2), (l.x[i] ** 2 + l.y[i] ** 2))
+            if (self.centers[x_ind][0] ** 2 + self.centers[x_ind][1] ** 2) > (l.x[i] ** 2 + l.y[i] ** 2):
+                self.total_power += l.P[i]
+        return self.total_power
     def diff_intensity(self, l):
-        half_0 = 0
-        half_1 = 1
-        for f in self.fibers:
-            if f.half == 0:
-                half_0 += f.intensity(l)
-            else:
-                half_1 += f.intensity(l)
-        return half_0 - half_1
+        half_0 = np.where(self.half == 0)[0]
+        half_1 = np.where(self.half == 1)[0]
+        return half_0
