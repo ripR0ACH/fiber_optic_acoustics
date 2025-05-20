@@ -13,11 +13,20 @@ class Laser:
         self.rays = self.make_gaussian_rays(self.resolution, self.waist, dy)
         return None
     def make_gaussian_rays(self, res, waist, power, dy = 0):
+        # self.waist = waist
+        # x, y = np.random.normal(0, self.waist / 2, size = (2, res))
+        # if dy != 0:
+        #     y += dy
+        # r = np.linspace(-self.waist / 2, self.waist / 2, res)
+        # P = np.exp(-2 * r ** 2 / (self.waist ** 2)) * np.abs(np.random.normal(scale = self.waist / 2, size = res))
+        # P *= power / sum(P)
+        # return x, y, P
         self.waist = waist
-        x, y = np.random.normal(0, self.waist / 2, size = (2, res))
+        # x, y = np.random.normal(0, self.waist / 2, size = (2, res))
         if dy != 0:
             y += dy
-        r = np.linspace(-self.waist / 2, self.waist / 2, res)
+        r = np.linspace(0, self.waist / 2, res)
+        theta = np.linspace(0, 2 * np.pi, res)
         P = np.exp(-2 * r ** 2 / (self.waist ** 2)) * np.abs(np.random.normal(scale = self.waist / 2, size = res))
         P *= power / sum(P)
-        return x, y, P
+        return r, theta, P
