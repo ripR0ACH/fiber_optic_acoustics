@@ -1,10 +1,13 @@
 import numpy as np
 class Laser:
-    def __init__(self, res = 0, waist = 1, power = 100):
+    def __init__(self, x = np.array([None]), y = np.array([None]), P = np.array([None]), res = 0, waist = 1, power = 100):
         self.power = power
         self.waist = waist
         self.resolution = res
-        self.x, self.y, self.P = self.make_gaussian_rays(self.resolution, self.waist, self.power)
+        if x[0] != None and y[0] != None and P[0] != None:
+            self.x, self.y, self.P = x, y, P
+        else:
+            self.x, self.y, self.P = self.make_gaussian_rays(self.resolution, self.waist, self.power)
         return
     def dt(self, dy = 0):
         self.rays = self.make_gaussian_rays(self.resolution, self.waist, dy)

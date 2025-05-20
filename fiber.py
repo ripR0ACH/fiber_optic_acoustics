@@ -3,6 +3,8 @@ from laser import Laser
 import numpy as np
 import matplotlib.pyplot as plt
 from joblib import Parallel, delayed
+import sys
+sys.setrecursionlimit(1000001)
 
 def find_nearest(array, value):
     array = np.asarray(array)
@@ -71,8 +73,8 @@ class FiberBundle:
             if centers:
                 ax.scatter(*self.centers[i], s = scatter_size)
         plt.ion()
-        # ax.set_xlim(-self.r - self.r * .1, self.r + self.r * .1)
-        # ax.set_ylim(-self.r - self.r * .1, self.r + self.r * .1)
+        ax.set_xlim(-self.r - self.r * .1, self.r + self.r * .1)
+        ax.set_ylim(-self.r - self.r * .1, self.r + self.r * .1)
         ax.axline((0, self.r), (self.r, self.r))
         ax.axline((self.r, self.r), (self.r, -self.r))
         ax.axline((-self.r, -self.r), (self.r, -self.r))
@@ -80,13 +82,27 @@ class FiberBundle:
         return fig, ax
     
     def sum_power(self, l):
-        self.total_power = 0
-        for i in range(len(l.x)):
-            x_ind = find_nearest(np.array(self.centers[:, 0] ** 2 + self.centers[:, 1] ** 2), (l.x[i] ** 2 + l.y[i] ** 2))
-            if (self.centers[x_ind][0] ** 2 + self.centers[x_ind][1] ** 2) > (l.x[i] ** 2 + l.y[i] ** 2):
-                self.total_power += l.P[i]
+        self.total_power = sum(Parallel(n_jobs = -1)(delayed(self.check_boundary)(l.x[i], l.y[i], l.P[i], self.centers) for i in range(len(l.x))))
         return self.total_power
-    def diff_intensity(self, l):
-        half_0 = np.where(self.half == 0)[0]
-        half_1 = np.where(self.half == 1)[0]
-        return half_0
+            
+    def check_boundary(self, x, y, p, centers):
+        ind = find_nearest(np.array((x - centers[:, 0]) ** 2 + (y - centers[:, 1]) ** 2), self.fr ** 2)
+        if ((x - self.centers[ind][0]) ** 2 + (y - self.centers[ind][1]) ** 2) < (self.fr ** 2):
+            return p
+        return 0
+    # def diff_intensity(self, l):
+    #     half_0 = np.where(self.half == 0)[0]
+    #     l1 = l.x[np.where(l.y > 0)] ** 2 + l.y[np.where(l.y > 0)] ** 2
+    #     for i in range(len(l.x[np.where(l.y > 0)])):
+    #         ind = find_nearest(np.array(self.centers[:, 0] ** 2 + self.centers[:, 1] ** 2), l1[i])
+    #         if (self.centers[ind][0] ** 2 + self.centers[ind][2] ** 2) > l1[i]:
+                
+    #     p1 = 0
+    #     # for i in range(len(self.centers[half_0])):
+    #     #     in_fibers = np.where((self.centers[half_0][i][0] ** 2 + self.centers[half_0][i][1] ** 2) > (l.x[np.where(l.y > 0)] ** 2 + l.y[np.where(l.y > 0)] ** 2))
+    #     #     # print(in_fibers)
+    #     #     p1 += sum(l.P[in_fibers])
+    #     print(l1)
+    #     # print(np.where(([self.centers[half_0][i][0] ** 2 + self.centers[half_0][i][1] ** 2] for i in range(len(self.centers[half_0]))) > (l.x[np.where(l.y > 0)] ** 2 + l.y[np.where(l.y > 0)] ** 2)).tolist())
+    #     half_1 = np.where(self.half == 1)[0]
+    #     # return np.where(l.y > 0)[0]
