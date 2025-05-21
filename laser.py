@@ -27,6 +27,6 @@ class Laser:
             y += dy
         r = np.linspace(0, self.waist / 2, res)
         theta = np.linspace(0, 2 * np.pi, res)
-        P = np.exp(-2 * r ** 2 / (self.waist ** 2)) * np.abs(np.random.normal(scale = self.waist / 2, size = res))
+        P = np.exp(-2 * r ** 2 / (self.waist ** 2)) * np.abs(np.random.normal(scale = self.waist / 2, size = (2, res)))
         P *= power / sum(P)
         return r, theta, P
