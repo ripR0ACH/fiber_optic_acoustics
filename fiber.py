@@ -3,8 +3,8 @@ from laser import Laser
 import numpy as np
 import matplotlib.pyplot as plt
 from joblib import Parallel, delayed
-import sys
-sys.setrecursionlimit(1000001)
+from matplotlib.image import BboxImage
+from matplotlib import cm
 
 def find_nearest(array, value):
     array = np.asarray(array)
@@ -61,7 +61,7 @@ class FiberBundle:
         Parallel(n_jobs = -1)(delayed(f2.append)([t, ring, int(i), 1]) for t in ts[int(len(ts) / 2):])
         return np.array(f1 + f2)
 
-    def plot(self, fibers = True, centers = False, ax = None, figsize = (10, 10), dimensions = (1, 1), scatter_size = 1, *args, **kwargs):
+    def plot(self, fibers = True, centers = False, ax = None, figsize = (10, 10), dimensions = (1, 1), scatter_size = 1, im = [], cmap = cm.coolwarm, *args, **kwargs):
         if ax == None:
             fig, ax = plt.subplots(*dimensions, figsize = figsize)
         else:
@@ -69,10 +69,14 @@ class FiberBundle:
         plt.ioff()
         for i in range(len(self.drawings)):
             if fibers:
-                ax.plot(self.drawings[i][0], self.drawings[i][1], *args, **kwargs)
+                ax.plot(self.drawings[i][0], self.drawings[i][1], zorder = 100, *args, **kwargs)
             if centers:
-                ax.scatter(*self.centers[i], s = scatter_size)
+                ax.scatter(*self.centers[i], s = scatter_size, zorder = 100, *args, **kwargs)
         plt.ion()
+        if len(im) !=  0:
+            im[np.ix_(np.where(im[:, 2] == 0)[0], [2])] = np.nan
+            print(im)
+            ax.add_artist(BboxImage(ax.get_window_extent, data = im[:, 2].reshape(int(np.sqrt(len(im[:, 2]))), int(np.sqrt(len(im[:, 2])))), cmap = cmap))
         ax.set_xlim(-self.r - self.r * .1, self.r + self.r * .1)
         ax.set_ylim(-self.r - self.r * .1, self.r + self.r * .1)
         ax.axline((0, self.r), (self.r, self.r))
