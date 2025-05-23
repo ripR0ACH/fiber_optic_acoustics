@@ -26,7 +26,22 @@ class FiberBundle:
         self.count = len(self.centers)
         self.drawings = np.array(Parallel(n_jobs = -1, backend = "threading")(delayed(self.draw_fiber)(self.centers[i]) for i in range(len(self.centers))))
         return
-
+    
+    def drop_rings(self, i):
+        if type(i) == int:
+            idx = np.where(self.ring_number == i)[0]
+            self.centers = np.delete(self.centers, idx, axis = 0)
+            self.thetas = np.delete(self.thetas, idx, axis = 0)
+            self.ring_radius = np.delete(self.ring_radius, idx, axis = 0)
+            self.ring_number = np.delete(self.ring_number, idx, axis = 0)
+            self.half = np.delete(self.half, idx, axis = 0)
+            self.count = len(self.centers)
+            self.drawings = np.delete(self.drawings, idx, axis = 0)
+        if type(i) == tuple:
+            for j in range(*i):
+                self.drop_rings(j)
+        return None
+    
     def set_fiber_pos(self, r, theta, ring, i, half):
         if half == 0:
             if i == 0:
@@ -61,7 +76,7 @@ class FiberBundle:
         Parallel(n_jobs = -1)(delayed(f2.append)([t, ring, int(i), 1]) for t in ts[int(len(ts) / 2):])
         return np.array(f1 + f2)
 
-    def plot(self, fibers = True, centers = False, ax = None, figsize = (10, 10), dimensions = (1, 1), scatter_size = 1, im = [], cmap = cm.coolwarm, *args, **kwargs):
+    def plot(self, fibers = True, centers = False, ax = None, figsize = (10, 10), dimensions = (1, 1), scatter_size = 1, im = Laser(), cmap = cm.coolwarm, show = False, *args, **kwargs):
         if ax == None:
             fig, ax = plt.subplots(*dimensions, figsize = figsize)
         else:
@@ -73,40 +88,23 @@ class FiberBundle:
             if centers:
                 ax.scatter(*self.centers[i], s = scatter_size, zorder = 100, *args, **kwargs)
         plt.ion()
-        if len(im) !=  0:
-            im[np.ix_(np.where(im[:, 2] == 0)[0], [2])] = np.nan
-            print(im)
-            ax.add_artist(BboxImage(ax.get_window_extent, data = im[:, 2].reshape(int(np.sqrt(len(im[:, 2]))), int(np.sqrt(len(im[:, 2])))), cmap = cmap))
-        ax.set_xlim(-self.r - self.r * .1, self.r + self.r * .1)
-        ax.set_ylim(-self.r - self.r * .1, self.r + self.r * .1)
+        if len(im) > 0:
+            ax.scatter(im.x, im.y, c = "b")
+        ax.set_xlim((-self.r - self.r * .1), (self.r + self.r * .1))
+        ax.set_ylim((-self.r - self.r * .1), (self.r + self.r * .1))
         ax.axline((0, self.r), (self.r, self.r))
         ax.axline((self.r, self.r), (self.r, -self.r))
         ax.axline((-self.r, -self.r), (self.r, -self.r))
         ax.axline((-self.r, -self.r), (-self.r, self.r))
+        if show:
+            plt.show()
         return fig, ax
     
-    def sum_power(self, l):
-        self.total_power = sum(Parallel(n_jobs = -1)(delayed(self.check_boundary)(l.x[i], l.y[i], l.P[i], self.centers) for i in range(len(l.x))))
-        return self.total_power
-            
-    def check_boundary(self, x, y, p, centers):
-        ind = find_nearest(np.array((x - centers[:, 0]) ** 2 + (y - centers[:, 1]) ** 2), self.fr ** 2)
-        if ((x - self.centers[ind][0]) ** 2 + (y - self.centers[ind][1]) ** 2) < (self.fr ** 2):
-            return p
-        return 0
-    # def diff_intensity(self, l):
-    #     half_0 = np.where(self.half == 0)[0]
-    #     l1 = l.x[np.where(l.y > 0)] ** 2 + l.y[np.where(l.y > 0)] ** 2
-    #     for i in range(len(l.x[np.where(l.y > 0)])):
-    #         ind = find_nearest(np.array(self.centers[:, 0] ** 2 + self.centers[:, 1] ** 2), l1[i])
-    #         if (self.centers[ind][0] ** 2 + self.centers[ind][2] ** 2) > l1[i]:
-                
-    #     p1 = 0
-    #     # for i in range(len(self.centers[half_0])):
-    #     #     in_fibers = np.where((self.centers[half_0][i][0] ** 2 + self.centers[half_0][i][1] ** 2) > (l.x[np.where(l.y > 0)] ** 2 + l.y[np.where(l.y > 0)] ** 2))
-    #     #     # print(in_fibers)
-    #     #     p1 += sum(l.P[in_fibers])
-    #     print(l1)
-    #     # print(np.where(([self.centers[half_0][i][0] ** 2 + self.centers[half_0][i][1] ** 2] for i in range(len(self.centers[half_0]))) > (l.x[np.where(l.y > 0)] ** 2 + l.y[np.where(l.y > 0)] ** 2)).tolist())
-    #     half_1 = np.where(self.half == 1)[0]
-    #     # return np.where(l.y > 0)[0]
+    def sum_power(self, l, half = -1):
+        if half == -1:
+            return sum(Parallel(n_jobs = -1, backend = "threading")(delayed(sum)(l.P[i]) for i in Parallel(n_jobs = -1, backend = "threading")(delayed(np.where)((l.x - c[0]) ** 2 + (l.y - c[1]) ** 2 < (self.fr ** 2)) for c in self.centers)))
+        else:
+            return sum(Parallel(n_jobs = -1, backend = "threading")(delayed(sum)(l.P[i]) for i in Parallel(n_jobs = -1, backend = "threading")(delayed(np.where)((l.x - c[0]) ** 2 + (l.y - c[1]) ** 2 < (self.fr ** 2)) for c in self.centers[np.where(self.half == half)[0]])))
+    
+    def diff_power(self, l):
+        return sum(Parallel(n_jobs = -1, backend = "threading")(delayed(sum)(l.P[i]) for i in Parallel(n_jobs = -1, backend = "threading")(delayed(np.where)((l.x - c[0]) ** 2 + (l.y - c[1]) ** 2 < (self.fr ** 2)) for c in self.centers[np.where(self.half == 0)[0]]))) - sum(Parallel(n_jobs = -1, backend = "threading")(delayed(sum)(l.P[i]) for i in Parallel(n_jobs = -1, backend = "threading")(delayed(np.where)((l.x - c[0]) ** 2 + (l.y - c[1]) ** 2 < (self.fr ** 2)) for c in self.centers[np.where(self.half == 1)[0]])))
