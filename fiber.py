@@ -12,7 +12,7 @@ def find_nearest(array, value):
     return idx
 
 class FiberBundle:
-    def __init__(self, r, fiber_r = 1):
+    def __init__(self, r, fiber_r = 1, cladding = 1e-4):
         self.r = r
         self.fr = fiber_r
         self.fiber_rings = np.r_[self.fr, np.linspace(2 * self.fr, (self.r - self.fr) - (self.r - self.fr) % (2 * self.fr), int((self.r - self.fr) / (2 * self.fr)))]
@@ -25,6 +25,7 @@ class FiberBundle:
         self.half = np.array([int(f[3]) for i in range(len(self.fibers)) for f in self.fibers[i]])
         self.count = len(self.centers)
         self.drawings = np.array(Parallel(n_jobs = -1, backend = "threading")(delayed(self.draw_fiber)(self.centers[i]) for i in range(len(self.centers))))
+        self.cladding = cladding
         return
     
     def drop_rings(self, i):
@@ -76,7 +77,7 @@ class FiberBundle:
         Parallel(n_jobs = -1)(delayed(f2.append)([t, ring, int(i), 1]) for t in ts[int(len(ts) / 2):])
         return np.array(f1 + f2)
 
-    def plot(self, fibers = True, centers = False, ax = None, figsize = (10, 10), dimensions = (1, 1), scatter_size = 1, im = Laser(), cmap = cm.coolwarm, show = False, *args, **kwargs):
+    def plot(self, fibers = True, centers = False, ax = None, figsize = (10, 10), dimensions = (1, 1), scatter_size = 1, im = Laser(), cmap = cm.coolwarm, show = False, save = False, name = "", *args, **kwargs):
         if ax == None:
             fig, ax = plt.subplots(*dimensions, figsize = figsize)
         else:
@@ -96,6 +97,8 @@ class FiberBundle:
         ax.axline((self.r, self.r), (self.r, -self.r))
         ax.axline((-self.r, -self.r), (self.r, -self.r))
         ax.axline((-self.r, -self.r), (-self.r, self.r))
+        if save and name != "":
+            plt.savefig(name)
         if show:
             plt.show()
         return fig, ax

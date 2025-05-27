@@ -3,24 +3,30 @@ from scipy.stats import multivariate_normal
 import matplotlib.pyplot as plt
 from matplotlib import cm
 class Laser:
-    def __init__(self, x = np.array([None]), y = np.array([None]), P = np.array([None]), res = 1506, waist = 1, power = 100, chop_waist = True, chop_percent = 1, power_noise = False):
+    def __init__(self, x = np.array([None]), y = np.array([None]), P = np.array([None]), xyz = np.array([]), res = 1506, waist = 1, power = 100, chop_waist = True, chop_percent = 1, power_noise = False):
         self.power = power
         self.waist = waist
         self.resolution = res
+        self.chop_waist = chop_waist
+        self.chop_percent = chop_percent
+        self.power_noise = power_noise
         if x[0] != None and y[0] != None and P[0] != None:
             self.x, self.y, self.P = x, y, P
+        elif len(xyz) != 0:
+            self.xyz = xyz
+            self.x = xyz[np.where(np.isnan(xyz[:, 2]) == False)[0]][:, 0]
+            self.y = xyz[np.where(np.isnan(xyz[:, 2]) == False)[0]][:, 1]
+            self.P = xyz[np.where(np.isnan(xyz[:, 2]) == False)[0]][:, 2]
         else:
-            self.xyz = self.make_gaussian_rays(self.resolution, self.power, chop_waist = chop_waist, chop_percent = chop_percent, power_noise = power_noise)
+            self.xyz = self.make_gaussian_rays(self.resolution, self.power, chop_waist = self.chop_waist, chop_percent = self.chop_percent, power_noise = self.power_noise)
         return
     def set_power(self, power):
         self.power = power
         return power
     def get_power(self):
         return self.power
-    def dt(self, dy = 0):
-        self.xyz[:, 1] += dy
-        self.y += dy
-        return None
+    def dy(self, dy = 0):
+        return np.column_stack([self.xyz[:, 0].flat, self.xyz[:, 1].flat + dy, self.xyz[:, 2].flat])
     def make_gaussian_rays(self, res, power, dy = 0, power_noise = False, chop_waist = True, chop_percent = 1):
         p = res
         xx, yy = np.mgrid[-(self.waist):(self.waist):(p * 1j), -(self.waist + dy):(self.waist + dy):(p * 1j)]
