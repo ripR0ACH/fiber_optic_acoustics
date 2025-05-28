@@ -12,12 +12,12 @@ def find_nearest(array, value):
     return idx
 
 class FiberBundle:
-    def __init__(self, r, fiber_r = 1, cladding = 1e-4):
+    def __init__(self, r, fiber_r = 2.5e-5, cladding = 5e-5):
         self.r = r
-        self.fr = fiber_r
+        self.fr = (fiber_r + cladding)
         self.fiber_rings = np.r_[self.fr, np.linspace(2 * self.fr, (self.r - self.fr) - (self.r - self.fr) % (2 * self.fr), int((self.r - self.fr) / (2 * self.fr)))]
         # theta position, ring radius, ring number, half
-        self.fibers = self.make_bundle()
+        self.fibers = self.make_bundle().reshape(len(self.fiber_rings), -1, 4)
         self.centers = np.array(Parallel(n_jobs = -1, backend = "threading")(delayed(self.set_fiber_pos)(self.fr, f[0], f[1], f[2], f[3]) for i in range(len(self.fibers)) for f in self.fibers[i]))
         self.thetas = np.array([f[0] for i in range(len(self.fibers)) for f in self.fibers[i]])
         self.ring_radius = np.array([f[1] for i in range(len(self.fibers)) for f in self.fibers[i]])
@@ -93,10 +93,13 @@ class FiberBundle:
             ax.scatter(im.x, im.y, c = "b")
         ax.set_xlim((-self.r - self.r * .1), (self.r + self.r * .1))
         ax.set_ylim((-self.r - self.r * .1), (self.r + self.r * .1))
-        ax.axline((0, self.r), (self.r, self.r))
-        ax.axline((self.r, self.r), (self.r, -self.r))
-        ax.axline((-self.r, -self.r), (self.r, -self.r))
-        ax.axline((-self.r, -self.r), (-self.r, self.r))
+        # ax.axline((0, self.r), (self.r, self.r))
+        # ax.axline((self.r, self.r), (self.r, -self.r))
+        # ax.axline((-self.r, -self.r), (self.r, -self.r))
+        # ax.axline((-self.r, -self.r), (-self.r, self.r))
+        ax.set_xlabel("x (m)")
+        ax.set_ylabel("y (m)")
+        ax.set_title("Fiber Bundle")
         if save and name != "":
             plt.savefig(name)
         if show:
@@ -105,9 +108,9 @@ class FiberBundle:
     
     def sum_power(self, l, half = -1):
         if half == -1:
-            return sum(Parallel(n_jobs = -1, backend = "threading")(delayed(sum)(l.P[i]) for i in Parallel(n_jobs = -1, backend = "threading")(delayed(np.where)((l.x - c[0]) ** 2 + (l.y - c[1]) ** 2 < (self.fr ** 2)) for c in self.centers)))
+            return sum(Parallel(n_jobs = -1, backend = "threading")(delayed(sum)(l.P[i]) for i in Parallel(n_jobs = -1, backend = "threading")(delayed(np.where)((l.x - c[0]) ** 2 + (l.y - c[1]) ** 2 < ((self.fr - self.cladding) ** 2)) for c in self.centers)))
         else:
-            return sum(Parallel(n_jobs = -1, backend = "threading")(delayed(sum)(l.P[i]) for i in Parallel(n_jobs = -1, backend = "threading")(delayed(np.where)((l.x - c[0]) ** 2 + (l.y - c[1]) ** 2 < (self.fr ** 2)) for c in self.centers[np.where(self.half == half)[0]])))
+            return sum(Parallel(n_jobs = -1, backend = "threading")(delayed(sum)(l.P[i]) for i in Parallel(n_jobs = -1, backend = "threading")(delayed(np.where)((l.x - c[0]) ** 2 + (l.y - c[1]) ** 2 < ((self.fr - self.cladding) ** 2)) for c in self.centers[np.where(self.half == half)[0]])))
     
     def diff_power(self, l):
-        return sum(Parallel(n_jobs = -1, backend = "threading")(delayed(sum)(l.P[i]) for i in Parallel(n_jobs = -1, backend = "threading")(delayed(np.where)((l.x - c[0]) ** 2 + (l.y - c[1]) ** 2 < (self.fr ** 2)) for c in self.centers[np.where(self.half == 0)[0]]))) - sum(Parallel(n_jobs = -1, backend = "threading")(delayed(sum)(l.P[i]) for i in Parallel(n_jobs = -1, backend = "threading")(delayed(np.where)((l.x - c[0]) ** 2 + (l.y - c[1]) ** 2 < (self.fr ** 2)) for c in self.centers[np.where(self.half == 1)[0]])))
+        return sum(Parallel(n_jobs = -1, backend = "threading")(delayed(sum)(l.P[i]) for i in Parallel(n_jobs = -1, backend = "threading")(delayed(np.where)((l.x - c[0]) ** 2 + (l.y - c[1]) ** 2 < ((self.fr - self.cladding) ** 2)) for c in self.centers[np.where(self.half == 0)[0]]))) - sum(Parallel(n_jobs = -1, backend = "threading")(delayed(sum)(l.P[i]) for i in Parallel(n_jobs = -1, backend = "threading")(delayed(np.where)((l.x - c[0]) ** 2 + (l.y - c[1]) ** 2 < ((self.fr - self.cladding) ** 2)) for c in self.centers[np.where(self.half == 1)[0]])))
