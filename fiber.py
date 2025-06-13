@@ -92,7 +92,7 @@ class FiberBundle:
         Parallel(n_jobs = -1)(delayed(f2.append)([t, ring, int(i), 1]) for t in ts[int(len(ts) / 2):])
         return np.array(f1 + f2)
 
-    def plot(self, fibers = True, centers = False, ax = None, figsize = (10, 10), scatter_size = 1, im = Laser(), lc = "b", show = False, save = False, name = "", *args, **kwargs):
+    def plot(self, fibers = True, centers = False, ax = None, figsize = (10, 10), scatter_size = 1, im = [], lc = "b", show = False, save = False, name = "", *args, **kwargs):
         if ax == None:
             fig, ax = plt.subplots(1, 1, figsize = figsize)
         else:
