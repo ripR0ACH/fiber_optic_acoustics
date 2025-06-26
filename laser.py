@@ -71,4 +71,3 @@ class Laser:
         return fig, ax
     def __len__(self):
         return len(self.x)
-# def diff_halves(l = Laser()):
