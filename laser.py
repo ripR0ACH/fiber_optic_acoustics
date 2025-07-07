@@ -26,7 +26,7 @@ class Laser:
     def get_power(self):
         return self.power
     def dy(self, dy = 0):
-        return np.column_stack([self.xyz[:, 0].flat, self.xyz[:, 1].flat + dy, self.xyz[:, 2].flat])
+        return np.column_stack([self.xyz[:, 0].flat, (self.xyz[:, 1] + dy).flat, self.xyz[:, 2].flat])
     def make_gaussian_rays(self, res, power, dy = 0, power_noise = False, chop_waist = True, chop_percent = 1):
         p = res
         xx, yy = np.mgrid[-(self.waist):(self.waist):(p * 1j), -(self.waist + dy):(self.waist + dy):(p * 1j)]
