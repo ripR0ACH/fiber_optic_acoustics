@@ -28,11 +28,11 @@ def split_beam(dt, i, a, f, l):
     dy = sound(dt * i, a, f)
     return [dt * i, np.sum(l.P[np.where(l.y[np.where(np.isnan(l.y[:]) == False)[0]] > dy)[0]]) - np.sum(l.P[np.where(l.y[np.where(np.isnan(l.y[:]) == False)[0]] < dy)[0]]), dy]
 if __name__ == "__main__":
-    bundle = fiber.FiberBundle(3e-3, (105 / 2) * 1e-6, (375 / 2) * 1e-6)
-    for i in range(4, 5):
+    bundle = fiber.FiberBundle(1.5, (105 / 2) * 1e-6)
+    for i in range(9, 15):
         space = bundle.fiber_rings[i] - bundle.cladding
         bundle.drop_rings((0, i))
         for j in np.linspace(2 * space, 2 * bundle.r, 50):
             l = laser.Laser(waist = j, power = 90)
-            main(2e6, 0.0001, l, bundle, filename = "data/20250627/" + str(np.round(l.waist, 5)) + "waist_" + str(i) + "bundlesdropped.csv")
+            main(2e6, 0.0001, l, bundle, filename = "data/20250708/" + str(np.round(l.waist, 5)) + "waist_" + str(i) + "bundlesdropped.csv")
         bundle.reset()

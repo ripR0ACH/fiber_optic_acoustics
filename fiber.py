@@ -1,5 +1,4 @@
 import time
-from laser import Laser
 import numpy as np
 import matplotlib.pyplot as plt
 from joblib import Parallel, delayed
@@ -103,9 +102,9 @@ class FiberBundle:
                 ax.plot(self.drawings[i][0], self.drawings[i][1], zorder = 100, *args, **kwargs)
             if centers:
                 ax.scatter(*self.centers[i], s = scatter_size, zorder = 100, *args, **kwargs)
-        plt.ion()
         if len(im) > 0:
             ax.scatter(im.x, im.y, c = lc)
+        plt.ion()
         ax.set_xlim((-self.r - self.r * .1), (self.r + self.r * .1))
         ax.set_ylim((-self.r - self.r * .1), (self.r + self.r * .1))
         ax.set_xlabel("x (m)")
